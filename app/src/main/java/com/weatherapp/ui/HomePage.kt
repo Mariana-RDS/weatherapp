@@ -22,9 +22,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.weatherapp.model.MainViewModel
 
 @Composable
-fun HomePage(modifier: Modifier = Modifier.Companion) {
+fun HomePage(modifier: Modifier = Modifier.Companion,
+             viewModel: MainViewModel
+) {
     Column(
         modifier = modifier.fillMaxSize()
             .background(Color.Blue)
