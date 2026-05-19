@@ -1,0 +1,34 @@
+package com.weatherapp.ui.nav
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import com.weatherapp.ui.HomePage
+import com.weatherapp.ui.ListPage
+import com.weatherapp.ui.MapPage
+
+@Composable
+fun MainNavHost(
+    navController: NavHostController,
+    modifier: Modifier = Modifier
+) {
+    NavHost(
+        navController = navController,
+        startDestination = Route.Home.route
+    ) {
+
+        composable(Route.Home.route) {
+            HomePage(modifier)
+        }
+
+        composable(Route.List.route) {
+            ListPage(modifier)
+        }
+
+        composable(Route.Map.route) {
+            MapPage(modifier)
+        }
+    }
+}
