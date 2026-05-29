@@ -13,7 +13,7 @@ sealed interface Route {
         override val route = "home"
     }
 
-    data object List : Route {
+    data object ListScreen : Route {
         override val route = "list"
     }
 
@@ -30,7 +30,7 @@ sealed class BottomNavItem(
         BottomNavItem("Início", Icons.Default.Home, Route.Home)
 
     data object ListButton :
-        BottomNavItem("Favoritos", Icons.Default.Favorite, Route.List)
+        BottomNavItem("Favoritos", Icons.Default.Favorite, Route.ListScreen)
 
     data object MapButton :
         BottomNavItem("Mapa", Icons.Default.LocationOn, Route.Map)

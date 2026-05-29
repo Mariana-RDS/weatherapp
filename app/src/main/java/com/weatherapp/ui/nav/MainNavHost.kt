@@ -25,7 +25,7 @@ fun MainNavHost(
             HomePage(modifier, viewModel)
         }
 
-        composable(Route.List.route) {
+        composable(Route.ListScreen.route) {
             ListPage(modifier, viewModel)
         }
 
