@@ -12,29 +12,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.Modifier
 import com.weatherapp.model.MainViewModel
 import com.weatherapp.ui.CityDialog
 import com.weatherapp.ui.nav.BottomNavBar
 import com.weatherapp.ui.nav.BottomNavItem
 import com.weatherapp.ui.nav.MainNavHost
-import com.weatherapp.ui.theme.WeatherAppTheme
 import com.weatherapp.ui.nav.Route
+import com.weatherapp.ui.theme.WeatherAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
@@ -44,36 +33,39 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
-            var showDialog by remember { mutableStateOf(false) }
+
             val navController = rememberNavController()
+
+            var showDialog by remember { mutableStateOf(false) }
+
             val currentRoute = navController.currentBackStackEntryAsState()
+
             val showButton = currentRoute.value?.destination?.route == Route.ListScreen.route
-            val launcher = rememberLauncherForActivityResult(contract =
-                ActivityResultContracts.RequestPermission(), onResult = {} )
+
+            val launcher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.RequestPermission(),
+                onResult = {}
+            )
+
             WeatherAppTheme {
-                if (showDialog) CityDialog(
-                    onDismiss = { showDialog = false },
-                    onConfirm = { city ->
-                        if (city.isNotBlank()) viewModel.add(city)
-                        showDialog = false
-                    })
+
                 Scaffold(
                     topBar = {
                         TopAppBar(
                             title = { Text("Bem-vindo/a!") },
                             actions = {
-                                IconButton( onClick = { finish() } ) {
-
+                                IconButton(onClick = { finish() }) {
                                     Icon(
-                                        imageVector =
-                                            Icons.AutoMirrored.Filled.ExitToApp,
-                                        contentDescription = "Localized description"
+                                        imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                                        contentDescription = "Sair"
                                     )
                                 }
                             }
                         )
                     },
+
                     bottomBar = {
                         val items = listOf(
                             BottomNavItem.HomeButton,
@@ -82,38 +74,44 @@ class MainActivity : ComponentActivity() {
                         )
                         BottomNavBar(navController = navController, items)
                     },
+
                     floatingActionButton = {
                         if (showButton) {
-                            FloatingActionButton(onClick = { showDialog = true }) {
+                            FloatingActionButton(
+                                onClick = { showDialog = true }
+                            ) {
                                 Icon(Icons.Default.Add, contentDescription = "Adicionar")
                             }
                         }
                     }
+
                 ) { innerPadding ->
+
                     Box(modifier = Modifier.padding(innerPadding)) {
-                        launcher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
-                        MainNavHost(navController = navController, viewModel = viewModel)
+
+                        LaunchedEffect(Unit) {
+                            launcher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+                        }
+
+                        MainNavHost(
+                            navController = navController,
+                            viewModel = viewModel
+                        )
+
+                        if (showDialog) {
+                            CityDialog(
+                                onDismiss = { showDialog = false },
+                                onConfirm = { city ->
+                                    if (city.isNotBlank()) {
+                                        viewModel.add(city)
+                                    }
+                                    showDialog = false
+                                }
+                            )
+                        }
                     }
                 }
             }
-
         }
     }
 }
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    WeatherAppTheme {
-        Greeting("Android")
-    }
-}
-
