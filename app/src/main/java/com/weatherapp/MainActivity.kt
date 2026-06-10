@@ -40,6 +40,9 @@ class MainActivity : ComponentActivity() {
 
             val navController = rememberNavController()
 
+            val viewModel: MainViewModel by viewModels()
+
+
             var showDialog by remember { mutableStateOf(false) }
 
             val currentRoute = navController.currentBackStackEntryAsState()
@@ -56,7 +59,10 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     topBar = {
                         TopAppBar(
-                            title = { Text("Bem-vindo/a!") },
+                            title = {
+                                val name = viewModel.user?.name ?: "[carregando...]"
+                                Text("Bem-vindo/a! $name")
+                            },
                             actions = {
                                 IconButton(onClick = {
 
