@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -12,6 +14,16 @@ android {
     compileSdk = 36
 
     defaultConfig {
+        val keyFile = project.rootProject.file("local.properties")
+        val props = Properties()
+        props.load(keyFile.inputStream())
+
+        buildConfigField(
+            "String",
+            "WEATHER_API_KEY",
+            props.getProperty("WEATHER_API_KEY")
+        )
+
         applicationId = "com.weatherapp"
         minSdk = 24
         targetSdk = 34
@@ -36,6 +48,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     kotlinOptions {
         jvmTarget = "11"
@@ -72,6 +85,9 @@ dependencies {
     implementation("com.google.maps.android:maps-compose:8.3.0")
 
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+
+    implementation("com.squareup.retrofit2:retrofit:3.0.0")
+    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
 
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
