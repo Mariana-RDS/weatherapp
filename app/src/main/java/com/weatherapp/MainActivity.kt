@@ -27,13 +27,12 @@ import com.weatherapp.ui.nav.Route
 import com.weatherapp.ui.theme.WeatherAppTheme
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.weatherapp.api.WeatherService
 import com.weatherapp.db.fb.FBDatabase
 import com.weatherapp.model.MainViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
-
-    private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,9 +43,10 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
 
             val fbDB = remember { FBDatabase() }
+            val weatherService = remember { WeatherService() }
 
             val viewModel: MainViewModel = viewModel(
-                factory = MainViewModelFactory(fbDB)
+                factory = MainViewModelFactory(fbDB, weatherService)
             )
 
             var showDialog by remember { mutableStateOf(false) }
@@ -118,7 +118,7 @@ class MainActivity : ComponentActivity() {
                                 onDismiss = { showDialog = false },
                                 onConfirm = { city ->
                                     if (city.isNotBlank()) {
-                                        viewModel.add(city)
+                                        viewModel.addCity(city)
                                     }
                                     showDialog = false
                                 }
