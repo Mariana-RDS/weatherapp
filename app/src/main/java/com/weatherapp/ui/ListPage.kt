@@ -34,7 +34,7 @@ import com.weatherapp.model.Weather
 fun ListPage(modifier: Modifier = Modifier,
              viewModel: MainViewModel) {
     val cityList = viewModel.cities
-    val activity = LocalContext.current as Activity // Para os Toasts
+    val activity = LocalContext.current as Activity
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -48,8 +48,9 @@ fun ListPage(modifier: Modifier = Modifier,
                     Toast.makeText(activity, "${city.name} removida!", Toast.LENGTH_SHORT).show()
 
                 }, onClick = {
+                    viewModel.city = city.name
                     Toast.makeText(activity, "Cidade: ${city.name}", Toast.LENGTH_SHORT).show()
-            })
+                })
         }
     }
 }
