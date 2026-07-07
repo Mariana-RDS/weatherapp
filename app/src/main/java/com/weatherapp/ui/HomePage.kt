@@ -29,11 +29,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.weatherapp.model.Forecast.ForecastItem
 import com.weatherapp.model.MainViewModel
+import androidx.compose.ui.res.painterResource
+import com.weatherapp.R
 
 @Composable
-fun HomePage(modifier: Modifier = Modifier,viewModel: MainViewModel) {
+fun HomePage(modifier: Modifier = Modifier,
+             viewModel: MainViewModel) {
     Column {
         if (viewModel.city == null) {
             Column( modifier = modifier.fillMaxSize()
@@ -46,22 +50,26 @@ fun HomePage(modifier: Modifier = Modifier,viewModel: MainViewModel) {
             }
         } else {
             Row {
-                Icon( imageVector = Icons.Filled.AccountBox,
-                    contentDescription = "Localized description",
-                    modifier = modifier.size(150.dp) )
+                val city = viewModel.city!!
+                val weather = viewModel.weather(city)
+                AsyncImage(
+                    model = weather.imgUrl,
+                    modifier = Modifier.size(75.dp),
+                    error = painterResource(id = R.drawable.loading),
+                    contentDescription = "Imagem"
+                )
                 Column {
                     Spacer(modifier = modifier.size(12.dp))
-                    Text( text = viewModel.city ?: "Selecione uma cidade...",
-                        fontSize = 28.sp )
-                    viewModel.city?.let { name ->
-                        val weather = viewModel.weather(name)
-                        Spacer(modifier = modifier.size(12.dp))
-                        Text( text = weather.desc ?: "...",
-                            fontSize = 22.sp )
-                        Spacer(modifier = modifier.size(12.dp))
-                        Text( text = "Temp: " + weather.temp + "℃",
-                            fontSize = 22.sp )
-                    }
+
+                    Text(text = city, fontSize = 28.sp)
+
+                    Spacer(modifier = modifier.size(12.dp))
+
+                    Text(text = weather.desc ?: "...", fontSize = 22.sp)
+
+                    Spacer(modifier = modifier.size(12.dp))
+
+                    Text(text = "Temp: ${weather.temp}℃", fontSize = 22.sp)
                 }
             }
             viewModel.forecast(viewModel.city!!)?.let { forecasts ->

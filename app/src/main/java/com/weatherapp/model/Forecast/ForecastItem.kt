@@ -18,6 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.text.DecimalFormat
+import coil.compose.AsyncImage
+import androidx.compose.ui.res.painterResource
+import com.weatherapp.R
 
 @Composable
 fun ForecastItem(
@@ -33,9 +36,12 @@ fun ForecastItem(
             .clickable( onClick = { onClick(forecast) }),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon( imageVector = Icons.Filled.LocationOn,
-            contentDescription = "Localized description",
-            modifier = modifier.size(48.dp) )
+        AsyncImage(
+            model = forecast.imgUrl,
+            modifier = Modifier.size(70.dp),
+            error = painterResource(id = R.drawable.loading),
+            contentDescription = "Imagem"
+        )
         Spacer(modifier = modifier.size(16.dp))
         Column {
             Text(modifier = modifier, text = forecast.weather, fontSize = 24.sp)

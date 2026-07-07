@@ -30,6 +30,9 @@ import androidx.compose.ui.platform.LocalContext
 import com.weatherapp.model.MainViewModel
 import com.weatherapp.model.Weather
 import com.weatherapp.ui.nav.Route
+import coil.compose.AsyncImage
+import androidx.compose.ui.res.painterResource
+import com.weatherapp.R
 
 @Composable
 fun ListPage(modifier: Modifier = Modifier,
@@ -70,10 +73,13 @@ fun CityItem(
         modifier = modifier.fillMaxWidth().padding(8.dp).clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            Icons.Rounded.FavoriteBorder,
-            contentDescription = ""
+        AsyncImage(
+            model = weather.imgUrl,
+            modifier = Modifier.size(75.dp),
+            error = painterResource(id = R.drawable.loading),
+            contentDescription = "Imagem"
         )
+
         Spacer(modifier = Modifier.size(12.dp))
         Column(modifier = modifier.weight(1f)) {
             Text(modifier = Modifier,
