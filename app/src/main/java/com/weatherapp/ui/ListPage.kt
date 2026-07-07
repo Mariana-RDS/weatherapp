@@ -29,12 +29,13 @@ import com.weatherapp.model.City
 import androidx.compose.ui.platform.LocalContext
 import com.weatherapp.model.MainViewModel
 import com.weatherapp.model.Weather
+import com.weatherapp.ui.nav.Route
 
 @Composable
 fun ListPage(modifier: Modifier = Modifier,
              viewModel: MainViewModel) {
     val cityList = viewModel.cities
-    val activity = LocalContext.current as Activity
+    val activity = LocalContext.current as? Activity
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -49,6 +50,7 @@ fun ListPage(modifier: Modifier = Modifier,
 
                 }, onClick = {
                     viewModel.city = city.name
+                    viewModel.page = Route.Home
                     Toast.makeText(activity, "Cidade: ${city.name}", Toast.LENGTH_SHORT).show()
                 })
         }

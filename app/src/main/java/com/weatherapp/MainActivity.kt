@@ -87,7 +87,7 @@ class MainActivity : ComponentActivity() {
                             BottomNavItem.ListButton,
                             BottomNavItem.MapButton,
                         )
-                        BottomNavBar(navController = navController, items)
+                        BottomNavBar(viewModel, navController, items)
                     },
 
                     floatingActionButton = {
@@ -100,13 +100,16 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
+
                 ) { innerPadding ->
+
+                    LaunchedEffect(Unit) {
+                        launcher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+                    }
 
                     Box(modifier = Modifier.padding(innerPadding)) {
 
-                        LaunchedEffect(Unit) {
-                            launcher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
-                        }
+
 
                         MainNavHost(
                             navController = navController,
@@ -123,6 +126,20 @@ class MainActivity : ComponentActivity() {
                                     showDialog = false
                                 }
                             )
+                        }
+                        LaunchedEffect(viewModel.page) {
+
+                            navController.navigate(viewModel.page.route) {
+
+                                navController.graph.startDestinationRoute?.let {
+                                    popUpTo(it) {
+                                        saveState = true
+                                    }
+                                }
+
+                                restoreState = true
+                                launchSingleTop = true
+                            }
                         }
                     }
                 }
