@@ -7,7 +7,7 @@ data class Weather(
     val desc: String,
     val temp: Double,
     val imgUrl: String,
-    var bitmap: Bitmap? = null
+    val bitmap: Bitmap? = null
 ) {
     companion object {
         val LOADING = Weather(
