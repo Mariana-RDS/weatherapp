@@ -14,9 +14,13 @@ import com.weatherapp.db.fb.FBCity
 import com.weatherapp.db.fb.FBUser
 import com.weatherapp.db.fb.toFBCity
 import com.weatherapp.model.Forecast.Forecast
+import com.weatherapp.monitor.ForecastMonitor
 import com.weatherapp.ui.nav.Route
 
-class MainViewModel(private val db: FBDatabase, private val service: WeatherService) : ViewModel(),
+class MainViewModel(private val db: FBDatabase,
+                    private val service: WeatherService,
+                    private val monitor: ForecastMonitor
+) : ViewModel(),
     FBDatabase.Listener {
 
     private val _forecast = mutableStateMapOf<String, List<Forecast>?>()
@@ -130,19 +134,27 @@ class MainViewModel(private val db: FBDatabase, private val service: WeatherServ
     override fun onUserSignOut() {
         _user.value = null
         _cities.clear()
+        monitor.cancelAll()
     }
 
     override fun onCityAdded(city: FBCity) {
-        _cities[city.name!!] = city.toCity()
+        val newCity = city.toCity()
+        _cities[city.name!!] = newCity
+        monitor.updateCity(newCity)
     }
 
     override fun onCityUpdated(city: FBCity) {
+        val updatedCity = city.toCity()
         _cities.remove(city.name)
-        _cities[city.name!!] = city.toCity()
+        _cities[city.name!!] = updatedCity
+        monitor.updateCity(updatedCity)
     }
 
     override fun onCityRemoved(city: FBCity) {
+        val updatedCity = city.toCity()
         _cities.remove(city.name)
+        _cities[city.name!!] = updatedCity
+        monitor.updateCity(updatedCity)
     }
 }
 

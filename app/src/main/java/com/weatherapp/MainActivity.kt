@@ -1,5 +1,6 @@
 package com.weatherapp
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -30,6 +31,7 @@ import com.google.firebase.ktx.Firebase
 import com.weatherapp.api.WeatherService
 import com.weatherapp.db.fb.FBDatabase
 import com.weatherapp.model.MainViewModelFactory
+import com.weatherapp.monitor.ForecastMonitor
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
@@ -41,13 +43,22 @@ class MainActivity : ComponentActivity() {
         setContent {
 
             val navController = rememberNavController()
+            val monitor = remember { ForecastMonitor(this) }
 
             val fbDB = remember { FBDatabase() }
             val weatherService = remember { WeatherService(this) }
 
             val viewModel: MainViewModel = viewModel(
-                factory = MainViewModelFactory(fbDB, weatherService)
+                factory = MainViewModelFactory(fbDB, weatherService, monitor)
             )
+            DisposableEffect(Unit) {
+                val listener = androidx.core.util.Consumer<Intent> { intent ->
+                    viewModel.city = intent.getStringExtra("city")
+                    viewModel.page = Route.Home
+                }
+                addOnNewIntentListener(listener)
+                onDispose { removeOnNewIntentListener(listener) }
+            }
 
             var showDialog by remember { mutableStateOf(false) }
 
@@ -58,6 +69,7 @@ class MainActivity : ComponentActivity() {
                 contract = ActivityResultContracts.RequestPermission(),
                 onResult = {}
             )
+
 
             WeatherAppTheme {
 
@@ -105,6 +117,7 @@ class MainActivity : ComponentActivity() {
 
                     LaunchedEffect(Unit) {
                         launcher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+                        launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
                     }
 
                     Box(modifier = Modifier.padding(innerPadding)) {

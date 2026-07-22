@@ -25,7 +25,7 @@ android {
         )
 
         applicationId = "com.weatherapp"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -83,6 +83,8 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.3.0")
     // Google maps for compose
     implementation("com.google.maps.android:maps-compose:8.3.0")
+
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
 
