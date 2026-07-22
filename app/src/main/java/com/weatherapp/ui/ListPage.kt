@@ -33,6 +33,8 @@ import com.weatherapp.ui.nav.Route
 import coil.compose.AsyncImage
 import androidx.compose.ui.res.painterResource
 import com.weatherapp.R
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.outlined.Notifications
 
 @Composable
 fun ListPage(modifier: Modifier = Modifier,
@@ -89,6 +91,16 @@ fun CityItem(
                 text = desc,
                 fontSize = 16.sp)
         }
+        val icon = if (city.isMonitored)
+            Icons.Filled.Notifications
+        else
+            Icons.Outlined.Notifications
+
+        Icon(
+            imageVector = icon,
+            contentDescription = "Monitorada",
+            modifier = Modifier.size(24.dp)
+        )
         IconButton(onClick = onClose) {
             Icon(Icons.Filled.Close, contentDescription = "Close")
         }

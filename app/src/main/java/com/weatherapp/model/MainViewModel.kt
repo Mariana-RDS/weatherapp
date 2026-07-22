@@ -115,6 +115,10 @@ class MainViewModel(private val db: FBDatabase, private val service: WeatherServ
         db.remove(city.toFBCity())
     }
 
+    fun update(city: City) {
+        db.update(city.toFBCity())
+    }
+
     fun add(name: String, location: LatLng? = null) {
         db.add(City(name = name, location = location).toFBCity())
     }
