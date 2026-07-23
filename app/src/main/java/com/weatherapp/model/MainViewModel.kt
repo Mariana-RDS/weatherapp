@@ -1,7 +1,5 @@
 package com.weatherapp.model
 
-import androidx.browser.browseractions.BrowserServiceFileProvider.loadBitmap
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -13,18 +11,23 @@ import com.weatherapp.db.fb.FBDatabase
 import com.weatherapp.db.fb.FBCity
 import com.weatherapp.db.fb.FBUser
 import com.weatherapp.db.fb.toFBCity
+import com.weatherapp.db.local.LocalDatabase
+import com.weatherapp.db.local.toLocalCity
 import com.weatherapp.model.Forecast.Forecast
 import com.weatherapp.monitor.ForecastMonitor
 import com.weatherapp.ui.nav.Route
 
-class MainViewModel(private val db: FBDatabase,
-                    private val service: WeatherService,
-                    private val monitor: ForecastMonitor
+class MainViewModel(
+    private val db: FBDatabase,
+    private val service: WeatherService,
+    private val monitor: ForecastMonitor,
+    private val localDB: LocalDatabase
 ) : ViewModel(),
     FBDatabase.Listener {
 
     private val _forecast = mutableStateMapOf<String, List<Forecast>?>()
     private val _user = mutableStateOf<User?>(null)
+
     val user: User?
         get() = _user.value
 
@@ -32,10 +35,11 @@ class MainViewModel(private val db: FBDatabase,
         db.setListener(this)
     }
 
-    fun forecast (name: String) = _forecast.getOrPut(name) {
+    fun forecast(name: String) = _forecast.getOrPut(name) {
         loadForecast(name)
-        emptyList() // return
+        emptyList()
     }
+
     private fun loadForecast(name: String) {
         service.getForecast(name) { apiForecast ->
             apiForecast?.let {
@@ -45,7 +49,6 @@ class MainViewModel(private val db: FBDatabase,
     }
 
     private var _city = mutableStateOf<String?>(null)
-
     private var _page = mutableStateOf<Route>(Route.Home)
 
     var page: Route
@@ -53,20 +56,18 @@ class MainViewModel(private val db: FBDatabase,
         set(value) {
             _page.value = value
         }
+
     var city: String?
         get() = _city.value
         set(value) {
             _city.value = value
         }
 
-
-
     private val _cities = mutableStateMapOf<String, City>()
     val cities: List<City>
         get() = _cities.values.toList().sortedBy { it.name }
 
     private val _weather = mutableStateMapOf<String, Weather>()
-
 
     fun weather(name: String) = _weather.getOrPut(name) {
         loadWeather(name)
@@ -81,6 +82,7 @@ class MainViewModel(private val db: FBDatabase,
             }
         }
     }
+
     private fun loadBitmap(name: String) {
         _weather[name]?.let { weather ->
             service.getBitmap(weather.imgUrl) { bitmap ->
@@ -92,12 +94,15 @@ class MainViewModel(private val db: FBDatabase,
     fun addCity(name: String) {
         service.getLocation(name) { lat, lng ->
             if (lat != null && lng != null) {
-                db.add(
-                    City(
-                        name = name,
-                        location = LatLng(lat, lng)
-                    ).toFBCity()
+
+                val city = City(
+                    name = name,
+                    location = LatLng(lat, lng)
                 )
+
+                db.add(city.toFBCity())
+
+                localDB.insert(city.toLocalCity())
             }
         }
     }
@@ -105,26 +110,37 @@ class MainViewModel(private val db: FBDatabase,
     fun addCity(location: LatLng) {
         service.getName(location.latitude, location.longitude) { name ->
             if (name != null) {
-                db.add(
-                    City(
-                        name = name,
-                        location = location
-                    ).toFBCity()
+
+                val city = City(
+                    name = name,
+                    location = location
                 )
+
+                db.add(city.toFBCity())
+
+                localDB.insert(city.toLocalCity())
             }
         }
     }
 
     fun remove(city: City) {
         db.remove(city.toFBCity())
+
+        localDB.delete(city.toLocalCity())
     }
 
     fun update(city: City) {
         db.update(city.toFBCity())
+
+        localDB.update(city.toLocalCity())
     }
 
     fun add(name: String, location: LatLng? = null) {
-        db.add(City(name = name, location = location).toFBCity())
+        val city = City(name = name, location = location)
+
+        db.add(city.toFBCity())
+
+        localDB.insert(city.toLocalCity())
     }
 
     override fun onUserLoaded(user: FBUser) {
@@ -153,8 +169,6 @@ class MainViewModel(private val db: FBDatabase,
     override fun onCityRemoved(city: FBCity) {
         val updatedCity = city.toCity()
         _cities.remove(city.name)
-        _cities[city.name!!] = updatedCity
         monitor.updateCity(updatedCity)
     }
 }
-

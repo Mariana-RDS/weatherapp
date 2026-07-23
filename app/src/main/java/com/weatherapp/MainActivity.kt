@@ -42,6 +42,10 @@ class MainActivity : ComponentActivity() {
 
         setContent {
 
+            val localDB = remember {
+                com.weatherapp.db.local.LocalDatabase(this, "weather-db")
+            }
+
             val navController = rememberNavController()
             val monitor = remember { ForecastMonitor(this) }
 
@@ -49,7 +53,7 @@ class MainActivity : ComponentActivity() {
             val weatherService = remember { WeatherService(this) }
 
             val viewModel: MainViewModel = viewModel(
-                factory = MainViewModelFactory(fbDB, weatherService, monitor)
+                factory = MainViewModelFactory(fbDB, weatherService, monitor, localDB)
             )
             DisposableEffect(Unit) {
                 val listener = androidx.core.util.Consumer<Intent> { intent ->
@@ -69,6 +73,8 @@ class MainActivity : ComponentActivity() {
                 contract = ActivityResultContracts.RequestPermission(),
                 onResult = {}
             )
+
+
 
 
             WeatherAppTheme {
