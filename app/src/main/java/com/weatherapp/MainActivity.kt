@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.weatherapp.model.MainViewModel
 import com.weatherapp.ui.CityDialog
@@ -52,8 +53,19 @@ class MainActivity : ComponentActivity() {
             val fbDB = remember { FBDatabase() }
             val weatherService = remember { WeatherService(this) }
 
+            val repository = remember {
+                com.weatherapp.repo.Repository(
+                    fbDB = fbDB,
+                    localDB = localDB
+                )
+            }
+
             val viewModel: MainViewModel = viewModel(
-                factory = MainViewModelFactory(fbDB, weatherService, monitor, localDB)
+                factory = MainViewModelFactory(
+                    repository,
+                    weatherService,
+                    monitor
+                )
             )
             DisposableEffect(Unit) {
                 val listener = androidx.core.util.Consumer<Intent> { intent ->
@@ -83,7 +95,9 @@ class MainActivity : ComponentActivity() {
                     topBar = {
                         TopAppBar(
                             title = {
-                                val name = viewModel.user?.name ?: "[carregando...]"
+                                val user = viewModel.user.collectAsStateWithLifecycle(null).value
+
+                                val name = user?.name ?: "[carregando...]"
                                 Text("Bem-vindo/a! $name")
                             },
                             actions = {

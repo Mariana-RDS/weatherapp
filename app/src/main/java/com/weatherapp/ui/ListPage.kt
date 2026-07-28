@@ -35,29 +35,59 @@ import androidx.compose.ui.res.painterResource
 import com.weatherapp.R
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun ListPage(modifier: Modifier = Modifier,
              viewModel: MainViewModel) {
-    val cityList = viewModel.cities
+    val cityMap = viewModel.cities
+        .collectAsStateWithLifecycle(emptyMap())
+        .value
+
+
+    val cityList = cityMap.values
+        .toList()
+        .sortedBy { it.name }
+
+
+    val weatherMap = viewModel.weather
+        .collectAsStateWithLifecycle(emptyMap())
+        .value
     val activity = LocalContext.current as? Activity
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
             .padding(8.dp)
     ) {
-        items(cityList, key = { it.name }) { city ->
-            CityItem(city = city,
-                weather = viewModel.weather(city.name),
+        items(
+            items = cityList,
+            key = { it.name }
+        ) { city ->
+
+            LaunchedEffect(city.name) {
+                viewModel.loadWeather(city.name)
+            }
+
+            val weather = weatherMap[city.name] ?: Weather.LOADING
+
+
+            CityItem(
+                city = city,
+                weather = weather,
                 onClose = {
                     viewModel.remove(city)
-                    Toast.makeText(activity, "${city.name} removida!", Toast.LENGTH_SHORT).show()
-
-                }, onClick = {
+                    Toast.makeText(
+                        activity,
+                        "${city.name} removida!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                },
+                onClick = {
                     viewModel.city = city.name
                     viewModel.page = Route.Home
-                    Toast.makeText(activity, "Cidade: ${city.name}", Toast.LENGTH_SHORT).show()
-                })
+                }
+            )
         }
     }
 }

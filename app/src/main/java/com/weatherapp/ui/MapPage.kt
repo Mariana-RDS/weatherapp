@@ -23,6 +23,8 @@ import androidx.core.content.ContextCompat.getDrawable
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.scale
 import com.weatherapp.R
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun MapPage(
@@ -45,40 +47,60 @@ fun MapPage(
 
     GoogleMap(
         modifier = modifier.fillMaxSize(),
-
         onMapClick = {
             viewModel.addCity(it)
         },
-
         cameraPositionState = camPosState,
-
         properties = MapProperties(
             isMyLocationEnabled = hasLocationPermission
         ),
-
         uiSettings = MapUiSettings(
             myLocationButtonEnabled = true
         )
     ) {
 
+        val cities = viewModel.cities
+            .collectAsStateWithLifecycle(emptyMap())
+            .value
 
-        viewModel.cities.forEach {
-            if (it.location != null) {
+        val weatherMap = viewModel.weather
+            .collectAsStateWithLifecycle(emptyMap())
+            .value
 
-                val weather = viewModel.weather(it.name)
+
+        cities.values.forEach { city ->
+
+            if (city.location != null) {
+
+                LaunchedEffect(city.name) {
+                    viewModel.loadWeather(city.name)
+                }
+
+                val weather = weatherMap[city.name] ?: Weather.LOADING
+
+
+                LaunchedEffect(weather) {
+                    viewModel.loadBitmap(city.name)
+                }
+
 
                 val image = weather.bitmap
-                    ?: getDrawable(context, R.drawable.loading)!!.toBitmap()
+                    ?: getDrawable(
+                        context,
+                        R.drawable.loading
+                    )!!.toBitmap()
+
 
                 val marker = BitmapDescriptorFactory
-                    .fromBitmap(image.scale(120, 120))
+                    .fromBitmap(image.scale(120,120))
 
-                val desc = if (weather == Weather.LOADING) "Carregando clima..."
-                else weather.desc
-                Marker( state = MarkerState(position = it.location),
+
+                Marker(
+                    state = MarkerState(position = city.location),
                     icon = marker,
-                    title = it.name,
-                    snippet = desc)
+                    title = city.name,
+                    snippet = weather.desc
+                )
             }
         }
     }

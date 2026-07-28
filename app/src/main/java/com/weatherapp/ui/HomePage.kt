@@ -6,7 +6,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -56,8 +57,21 @@ fun HomePage(
         } else {
 
             val cityName = viewModel.city!!
-            val city = viewModel.cities.find { it.name == cityName }
-            val weather = viewModel.weather(cityName)
+
+            val cities = viewModel.cities
+                .collectAsStateWithLifecycle(emptyMap())
+                .value
+
+            val city = cities[cityName]
+
+            val weather = viewModel.weather
+                .collectAsStateWithLifecycle(emptyMap())
+                .value[cityName] ?: com.weatherapp.model.Weather.LOADING
+
+
+            LaunchedEffect(cityName) {
+                viewModel.loadWeather(cityName)
+            }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
 
@@ -120,10 +134,23 @@ fun HomePage(
                 }
             }
 
-            viewModel.forecast(cityName)?.let { forecasts ->
+            val forecasts = viewModel.forecast
+                .collectAsStateWithLifecycle(emptyMap())
+                .value[cityName]
+
+
+            LaunchedEffect(cityName) {
+                viewModel.loadForecast(cityName)
+            }
+
+
+            forecasts?.let {
                 LazyColumn {
-                    items(forecasts) { forecast ->
-                        ForecastItem(forecast, onClick = { })
+                    items(items = it) { forecast ->
+                        ForecastItem(
+                            forecast,
+                            onClick = { }
+                        )
                     }
                 }
             }
